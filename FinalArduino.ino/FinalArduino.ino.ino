@@ -23,7 +23,7 @@ int period = 3;
 const int MAXQUEUESIZE = 3;
 double flowRates[MAXQUEUESIZE];         // rolling window of flow rates
                                         // size is 3/sampling_rate
-double offset = 15.818;
+double offset = 15.848+1.347;
 float rmax = 0.0;
 float rmin = 0.0;
 
@@ -39,7 +39,6 @@ bool weightInputed = false;
 //=============================================================================================
 
 void setup() {
-
   Serial.begin(9600);
   scale.set_scale();
   scale.tare();
@@ -79,22 +78,28 @@ void loop() {
       lethals[1] == false;
       lethals[2] == false;
     }
-    else
+    else{
       lethal_stepper++;
-    
+    }
     //tone(guitarIn, 493, 273.683002294);
+    
     if(Serial.available() > 0){
       serialData = Serial.parseInt();
       patientWeight = serialData;
-      tone(guitarIn, 493, 273.683002294);
+      
+      tone(guitarIn, 200, 273.683002294); 
+
+      Serial.print("Patient Weight: ");
+      Serial.print(patientWeight);
       
       //rmax = 25/24*patientWeight-40;
       rmax = 5;     // for demo purposes only, in production code the code above will be used
+      Serial.read();   // ignore second input
     }
   
   scale.set_scale(calibration_factor);         //Adjust to this calibration factor
-  reading = ((scale.get_units()+offset)*(-1));
- 
+  reading = ((scale.get_units()+offset)*(1));
+  
   Serial.print("Reading: ");
   Serial.print(reading);
   Serial.print(" kg"); 
@@ -136,10 +141,13 @@ void loop() {
 
   }
   else {
-    lcd.print("lethal!");
-    tone(guitarIn, 600, 273.683002294);
-    digitalWrite(breadbardpinIn, HIGH);
-    lethals[lethal_stepper-1] = true;
+      if (timer > 2){
+        lcd.print("lethal!");
+        tone(guitarIn, 600, 273.683002294);
+        digitalWrite(breadbardpinIn, HIGH);
+        //lethals[lethal_stepper-1] = true;
+        //lcd.print(reading,3);
+      }
   }
 
   Serial.print("  time: ");
